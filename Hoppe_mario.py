@@ -3,19 +3,24 @@ import sys
 from pygame.locals import (K_UP, K_DOWN, K_LEFT, K_RIGHT)
 
 pygame.init()
+pygame.mixer.init()
+
+#Lydeffekter
+lydeffekt_hopping = pygame.mixer.Sound("hopping.mp3")
+lydeffekt_løping = pygame.mixer.Sound("fotsteg.mp3")
 
 KLOKKE = pygame.time.Clock()
 SKJERM = pygame.display.set_mode((800, 800))
 pygame.display.set_caption("Hoppe i Pygame")
 
-X_POSISJON, Y_POSISJON = 400, 650
+X_POSISJON, Y_POSISJON = 400, 645
 hopping = False
 
 Y_GRAVITASJON = 1
 HOPPE_HØYDE = 20
 Y_VELOCITY = HOPPE_HØYDE
-STANDING_SURFACE = pygame.transform.scale(pygame.image.load("stående_mario.png"), (48, 64))
-JUMPING_SURFACE = pygame.transform.scale(pygame.image.load("hoppende_mario.png"), (48, 64))
+STANDING_SURFACE = pygame.transform.scale(pygame.image.load("mario_standing.png"), (48, 64))
+JUMPING_SURFACE = pygame.transform.scale(pygame.image.load("mario_jumping.png"), (48, 64))
 BACKGROUND = pygame.transform.scale(pygame.image.load("WHu9Z.png"), (800, 800))
 
 mario_rect = STANDING_SURFACE.get_rect(center=(X_POSISJON, Y_POSISJON))
@@ -31,9 +36,11 @@ class Mario:
     def flytt(self, taster):
         if taster[K_LEFT]:
             self.x -= self.fart
+            lydeffekt_løping.play()
         if taster[K_RIGHT]:
             self.x += self.fart
-
+            lydeffekt_løping.play()
+        
 mario = Mario(X_POSISJON, Y_POSISJON, 5, SKJERM)  # Opprett et Mario-objekt
 
 while True:
@@ -46,9 +53,13 @@ while True:
     
     if keys_pressed[pygame.K_SPACE]:
         hopping = True
+        lydeffekt_hopping.play()
 
     # Kall flytt-metoden for Mario-objektet basert på tastetrykkene
     mario.flytt(keys_pressed)
+    
+    if not (keys_pressed[K_LEFT], keys_pressed[K_RIGHT]):
+        lydeffekt_løping.stop()
     
     SKJERM.blit(BACKGROUND, (0, 0))
     
