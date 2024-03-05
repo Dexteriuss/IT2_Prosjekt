@@ -2,7 +2,7 @@ import pygame
 import sys
 from pygame.locals import (K_UP, K_DOWN, K_LEFT, K_RIGHT)
 import random
-
+import math
 pygame.init()
 pygame.mixer.init()
 
@@ -12,9 +12,11 @@ lydeffekt_hopping = pygame.mixer.Sound("hopping.mp3")
 lydeffekt_løping = pygame.mixer.Sound("fotsteg.mp3")
 lydeffekt_sang = pygame.mixer.Sound("Super-Mario-Bros_SANG.mp3")
 
-# Får den klassiske mario-lyden til å spille
+# Får den klassiske mario-lyden til å spille og en kontinuerlig loop med
+# pygame.mixer.music.load og play. La til -1 for at det skal funke.
 lydeffekt_start.play()
-lydeffekt_sang.play()
+pygame.mixer.music.load("Super-Mario-Bros_SANG.mp3")
+pygame.mixer.music.play(-1)
 
 KLOKKE = pygame.time.Clock()
 SKJERM = pygame.display.set_mode((800, 800))
@@ -22,6 +24,9 @@ pygame.display.set_caption("Super-Mario KOPI")
 
 X_POSISJON, Y_POSISJON = 400, 645
 hopping = False
+
+# Variabelen holder kontroll på om spillet er gameover
+gameover = False
 
 Y_GRAVITASJON = 1
 HOPPE_HØYDE = 20
@@ -49,9 +54,32 @@ class Mario:
             self.x += self.fart
             lydeffekt_løping.play()
             
-        
-mario = Mario(X_POSISJON, Y_POSISJON, 5, SKJERM)  # Opprett et Mario-objekt
 
+class Goomba:
+    def __init__(self, x, y, fart, vindusobjekt):
+        self.x = x
+        self.y = y
+        self.fart = fart
+        self.vindusobjekt = vindusobjekt
+        self.bilde = pygame.transform.scale(pygame.image.load("goomba.png"), (85, 80))
+        self.rect = self.bilde.get_rect(center=(self.x, self.y))
+        self.retning = 1
+        
+    def flytt(self):
+        self.x += self.fart * self.retning
+        if self.rect.right >= self.vindusobjekt.get_width() and self.rect.left > 0:
+           # Her skal Goombaen endre retning når den treffer kanten av skjermen.
+           self.x = self.vindusobjekt.get_width() - self.rect.width
+           self.retning *= -1
+        elif self.rect.left <= 0 and self.retning < 0:
+            self.x = 0
+            self.retning = 1
+        self.rect.center = (self.x, self.y)
+           
+           
+mario = Mario(X_POSISJON, Y_POSISJON, 5, SKJERM)  # Opprett et Mario-objekt
+goomba = Goomba(500, 660, 2, SKJERM)
+    
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -85,6 +113,10 @@ while True:
     else:
         mario_rect = STANDING_SURFACE.get_rect(center=(mario.x, Y_POSISJON))
         SKJERM.blit(STANDING_SURFACE, mario_rect)
+    #Goombaens plassering oppdateres
+    goomba.flytt()
+    #Gombaen tenges
+    SKJERM.blit(goomba.bilde, goomba.rect)
     
     pygame.display.update()
     KLOKKE.tick(60)
