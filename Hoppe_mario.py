@@ -11,6 +11,9 @@ lydeffekt_start = pygame.mixer.Sound("mariosnakk.mp3")
 lydeffekt_hopping = pygame.mixer.Sound("hopping.mp3")
 lydeffekt_løping = pygame.mixer.Sound("fotsteg.mp3")
 lydeffekt_sang = pygame.mixer.Sound("Super-Mario-Bros_SANG.mp3")
+lydeffekt_gameover = pygame.mixer.Sound("gameover.wav")
+
+gameover_Kanal = pygame.mixer.Channel(1)
 
 # Får den klassiske mario-lyden til å spille og en kontinuerlig loop med
 # pygame.mixer.music.load og play. La til -1 for at det skal funke.
@@ -35,7 +38,7 @@ STANDING_SURFACE = pygame.transform.scale(pygame.image.load("mario_standing.png"
 JUMPING_SURFACE = pygame.transform.scale(pygame.image.load("mario_jumping.png"), (48, 64))
 BACKGROUND = pygame.transform.scale(pygame.image.load("WHu9Z.png"), (800, 800))
 
-mario_rect = STANDING_SURFACE.get_rect(center=(X_POSISJON, Y_POSISJON))
+#mario_rect = STANDING_SURFACE.get_rect(center=(X_POSISJON, Y_POSISJON))
 
 
 class Mario:
@@ -75,6 +78,7 @@ class Goomba:
             self.x = 0
             self.retning = 1
         self.rect.center = (self.x, self.y)
+
            
            
 mario = Mario(X_POSISJON, Y_POSISJON, 5, SKJERM)  # Opprett et Mario-objekt
@@ -117,6 +121,32 @@ while True:
     goomba.flytt()
     #Gombaen tenges
     SKJERM.blit(goomba.bilde, goomba.rect)
+    
+    if mario_rect.colliderect(goomba.rect):
+        if mario_rect.bottom <= goomba.rect.top + 10:
+            goomba.rect.x = -100
+            #lydeffekt_død = pygame.mixer.Sound("død_lyd.mp4")
+            #lydeffekt_død.play()
+            
+        
+        else:
+            
+            # Stopper alle lydeffekter og spiller en gameover-lyd
+            pygame.mixer.music.stop()
+            lydeffekt_gameover = pygame.mixer.Sound("gameover.wav")
+            gameover_Kanal.play(lydeffekt_gameover)
+       
+            # Vis en gameover-melding
+            gameover_font = pygame.font.Font(None, 74)
+            gameover_text = gameover_font.render('Game Over', True, (255, 0, 0))
+            SKJERM.blit(gameover_text, (250, 350))
+            pygame.display.update()
+            # Venter i noen sekunder før jeg avslutter eller restarter spillet
+            pygame.time.wait(3000)
+        
+            break  # Avslutter spill-løkken
+    
+
     
     pygame.display.update()
     KLOKKE.tick(60)
